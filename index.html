@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spanish Present-Tense Quiz</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#192841;background:#f1f5fa}*{box-sizing:border-box}body{margin:0}main{max-width:900px;margin:auto;padding:32px 20px}h1{margin:8px 0;font-size:clamp(26px,5vw,40px)}.intro{color:#52647b;line-height:1.6}.panel,.question{background:white;border:1px solid #dce4ee;border-radius:16px;padding:22px;margin:16px 0}.controls{display:flex;gap:12px;align-items:end;flex-wrap:wrap}label{display:block;font-weight:600}select,button{font:inherit;border-radius:9px;padding:11px 15px}select{margin-top:7px;border:1px solid #a8b8cd;background:white;max-width:100%}button{cursor:pointer;border:1px solid #b9c8dc;background:#fff;color:#192841}button.primary{background:#245bd7;color:white;border-color:#245bd7}button:hover{filter:brightness(.96)}button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #edab32;outline-offset:3px}.tag{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:#245bd7;font-weight:700}.status{color:#52647b;margin-top:16px}.question h2{font-size:20px;margin:0 0 18px}.answers{display:flex;gap:12px}.answers label{font-size:20px;font-weight:700;border:1px solid #bbc9dc;border-radius:9px;padding:11px 20px;cursor:pointer}input{margin-right:8px}.feedback{margin:14px 0 0;line-height:1.5}.correct{border-left:5px solid #228352}.incorrect{border-left:5px solid #c74343}.result{font-size:20px;font-weight:700}.hidden{display:none}footer{color:#52647b;font-size:14px;padding:18px 0}
+button:disabled{opacity:.45;cursor:not-allowed}.answers{flex-wrap:wrap;align-items:center}.answers label.answer-correct{background:#dcfce7;border:2px solid #228352;color:#14532d}.answers label.answer-wrong{background:#fee2e2;border:2px solid #c74343;color:#991b1b}.answers label:has(input:disabled){cursor:default}.verdict{font-weight:400}.verdict.good{color:#14532d;font-weight:700}.verdict.bad{color:#991b1b}.correction{color:inherit;font:inherit}.struck{text-decoration:line-through;text-decoration-thickness:2px}#verb{font-size:28px;margin:14px 0}#results p{margin-top:0}
+.answers label{position:relative}.wrong-mark{position:absolute;right:-10px;top:-14px;width:28px;height:28px;border-radius:50%;background:#c74343;color:white;display:grid;place-items:center;font-size:20px;font-weight:700;line-height:1}
+.question h2.question-correct{color:#228352}
+.tense{margin:0;color:inherit;font-size:28px;font-weight:700}
+button.primary:disabled{background:#e2e5ea;color:#737b87;border-color:#cbd0d8;opacity:1}
+</style>
+</head>
+<body><main>
+<section class="panel"><h2 id="verb"></h2><p class="tense">Present tense</p></section>
+<form id="quiz"><div id="questions"></div></form>
+<section class="panel"><div id="results" aria-live="polite"></div><div class="controls"><button id="restart" type="button">Restart quiz</button><button id="next" class="primary" type="button" disabled>Next quiz</button></div><p id="next-help" class="status">Score 100% to unlock the next quiz.</p></section>
+<footer>Version 1.0.0 · 14 verbs · 84 questions · Works offline · Your answers stay in this tab.</footer>
+</main>
+<script>
+const verbs=[
+['querer','quiero','quieres','quiere','queremos','queréis','quieren','queres','quieremos','quieres','queren','quiere'],
+['poder','puedo','puedes','puede','podemos','podéis','pueden','podo','puedemos','poden','puedes','puede'],
+['empezar','empiezo','empiezas','empieza','empezamos','empezáis','empiezan','empeza','empiezáis','empiezas','empezan','empieza'],
+['preferir','prefiero','prefieres','prefiere','preferimos','preferís','prefieren','prefero','prefierimos','preferen','prefieres','prefiere'],
+['perder','pierdo','pierdes','pierde','perdemos','perdéis','pierden','perdes','pierdemos','pierdes','perden','pierde'],
+['comenzar','comienzo','comienzas','comienza','comenzamos','comenzáis','comienzan','comenzo','comienzamos','comenzan','comienzas','comienza'],
+['contar','cuento','cuentas','cuenta','contamos','contáis','cuentan','conta','cuentáis','cuentas','contan','cuenta'],
+['pedir','pido','pides','pide','pedimos','pedís','piden','pedo','pidimos','peden','pides','pide'],
+['despertarse','me despierto','te despiertas','se despierta','nos despertamos','os despertáis','se despiertan','te despertas','nos despiertamos','se despiertas','se despertan','me despierta'],
+['almorzar','almuerzo','almuerzas','almuerza','almorzamos','almorzáis','almuerzan','almorzo','almuerzamos','almorzan','almuerzas','almuerza'],
+['reír','río','ríes','ríe','reímos','reís','ríen','ríen','ríis','ríes','ríe','ríe'],
+['acostarse','me acuesto','te acuestas','se acuesta','nos acostamos','os acostáis','se acuestan','me acosto','nos acuestamos','se acostan','se acuestas','me acuesta'],
+['seguir','sigo','sigues','sigue','seguimos','seguís','siguen','segues','siguimos','sigues','seguen','sigue'],
+['encontrar','encuentro','encuentras','encuentra','encontramos','encontráis','encuentran','encontro','encuentramos','encontran','encuentras','encuentra']
+];
+const subjects=['Yo','Tú','Él / Ella / Usted','Nosotros / Nosotras','Vosotros / Vosotras','Ellos / Ellas / Ustedes'];
+const formIndices=[1,2,3,4,5,6];
+
+const translations=['to want','to be able to / can','to start','to prefer','to lose','to begin','to count / tell','to ask for / request','to wake up','to eat lunch','to laugh','to go to bed','to follow / continue','to find'];
+const questions=document.querySelector('#questions'),form=document.querySelector('#quiz'),results=document.querySelector('#results'),next=document.querySelector('#next');
+let current=0,items=[],answers=[];
+function shuffle(values){for(let i=values.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[values[i],values[j]]=[values[j],values[i]]}return values}
+function createChoices(correct){
+ const words=correct.split(' '),word=words.pop(),prefix=words.length?words.join(' ')+' ':'';
+ const candidates=new Set();
+ const add=value=>{if(value!==word&&value.length)candidates.add(prefix+value)};
+ // Accent, stem, and ending changes keep distractors close to the target.
+ const plain=word.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ add(plain);
+ if(word.includes('ie'))add(word.replace('ie','e'));
+ if(word.includes('ue'))add(word.replace('ue','o'));
+ if(word.includes('i'))add(word.replace('i','e'));
+ if(word.includes('e'))add(word.replace('e','i'));
+ const last=word.slice(-1);
+ for(const ending of ['o','a','e','s','n'])add(word.slice(0,-1)+ending);
+ add(word+'s');add(word+'n');
+ if(last==='s'||last==='n')add(word.slice(0,-1));
+ const wrong=shuffle([...candidates]).slice(0,3);
+ return shuffle([correct,...wrong]);
+}
+function createItems(v){
+ return shuffle(subjects.map((subject,i)=>{
+  const correct=v[formIndices[i]];
+  return {subject,correct,choices:createChoices(correct)};
+ }));
+}
+function render(){
+ const v=verbs[current];items=createItems(v);answers=Array(items.length).fill(null);questions.replaceChildren();
+ document.querySelector('#verb').textContent=v[0]+' — '+translations[current];
+ items.forEach((item,i)=>{
+  const card=document.createElement('section');card.className='question';
+  const heading=document.createElement('h2');heading.id='q'+i;
+  heading.textContent=(i+1)+'. '+item.subject+' ______.';card.append(heading);
+  const options=document.createElement('div');options.className='answers';
+  options.setAttribute('role','group');options.setAttribute('aria-labelledby',heading.id);
+  item.choices.forEach(choice=>{
+   const label=document.createElement('label'),input=document.createElement('input');
+   input.type='radio';input.name='q'+i;input.dataset.index=i;input.value=choice;
+   label.append(input,choice);options.append(label);
+  });
+  card.append(options);
+  const feedback=document.createElement('p');feedback.className='feedback hidden';feedback.setAttribute('aria-live','polite');
+  card.append(feedback);questions.append(card);
+ });updateScore();
+}
+function updateScore(){
+ const answered=answers.filter(value=>value!==null).length,score=answers.filter(value=>value===true).length;
+ results.innerHTML='<p class="result">'+(answered===items.length?'Final score: ':'Score: ')+score+' / '+(answered===0?'0':answered)+(answered===items.length?' · '+Math.round(score/items.length*100)+'%':'')+'</p>';
+ next.disabled=score!==items.length||current===verbs.length-1;
+ document.querySelector('#next-help').textContent=answered!==items.length?'Score 100% to unlock the next quiz.':score!==items.length?'Restart quiz and score 100% to continue.':current===verbs.length-1?'You completed all 14 verbs with 100%!':'100%! Continue to '+verbs[current+1][0]+' — '+translations[current+1]+'.';
+}
+form.addEventListener('submit',event=>event.preventDefault());
+form.addEventListener('change',event=>{
+ const input=event.target;if(!input.matches('input[type="radio"]'))return;
+ const i=Number(input.dataset.index);if(answers[i]!==null)return;
+ const item=items[i],right=input.value===item.correct;answers[i]=right;
+ const card=questions.children[i];card.classList.add(right?'correct':'incorrect');
+ card.querySelectorAll('input').forEach(option=>{
+  option.disabled=true;
+  if(option.value===item.correct)option.closest('label').classList.add('answer-correct');
+  else if(option.checked)option.closest('label').classList.add('answer-wrong');
+ });
+ if(right)card.querySelector('h2').classList.add('question-correct');
+ else{
+  const mark=document.createElement('span');mark.className='wrong-mark';mark.textContent='✕';mark.setAttribute('aria-label','Incorrect');
+  input.closest('label').append(mark);
+ }
+ const feedback=card.querySelector('.feedback');feedback.classList.remove('hidden');
+ feedback.textContent=(right?'Correct! ':'Incorrect. Correct answer: ')+item.correct+'.';
+ updateScore();
+});
+document.querySelector('#restart').addEventListener('click',()=>{render();window.scrollTo({top:0,behavior:'smooth'})});
+next.addEventListener('click',()=>{if(next.disabled)return;current++;render();window.scrollTo({top:0,behavior:'smooth'})});
+render();
+</script></body></html>
