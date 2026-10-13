@@ -10,14 +10,14 @@ button:disabled{opacity:.45;cursor:not-allowed}.answers{flex-wrap:wrap;align-ite
 .answers label{position:relative}.wrong-mark{position:absolute;right:-10px;top:-14px;width:28px;height:28px;border-radius:50%;background:#c74343;color:white;display:grid;place-items:center;font-size:20px;font-weight:700;line-height:1}
 .question h2.question-correct{color:#228352}
 .tense{margin:0;color:inherit;font-size:28px;font-weight:700}
-button.primary:disabled{background:#e2e5ea;color:#737b87;border-color:#cbd0d8;opacity:1}
+button.primary:disabled{background:#245bd7;color:white;border-color:#245bd7;opacity:1}
 </style>
 </head>
 <body><main>
 <section class="panel"><h2 id="verb"></h2><p class="tense">Present tense</p></section>
 <form id="quiz"><div id="questions"></div></form>
 <section class="panel"><div id="results" aria-live="polite"></div><div class="controls"><button id="restart" type="button">Restart quiz</button><button id="next" class="primary" type="button" disabled>Next quiz</button></div><p id="next-help" class="status">Score 100% to unlock the next quiz.</p></section>
-<footer>Version 1.0.1 · 14 verbs · 84 questions · Works offline · Your answers stay in this tab.</footer>
+<footer>Version 1.0.2 · 14 verbs · 84 questions · Works offline · Your answers stay in this tab.</footer>
 </main>
 <script>
 const verbs=[
