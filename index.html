@@ -16,8 +16,8 @@ button.primary:disabled{background:#245bd7;color:white;border-color:#245bd7;opac
 <body><main>
 <section class="panel"><h2 id="verb"></h2><p class="tense">Present tense</p></section>
 <form id="quiz"><div id="questions"></div></form>
-<section class="panel"><div id="results" aria-live="polite"></div><div class="controls"><button id="restart" type="button">Restart quiz</button><button id="next" class="primary" type="button" disabled>Next quiz</button></div><p id="next-help" class="status">Score 100% to unlock the next quiz.</p></section>
-<footer>Version 1.0.2 · 14 verbs · 84 questions · Works offline · Your answers stay in this tab.</footer>
+<section class="panel"><div id="results" aria-live="polite"></div><div class="controls"><button id="restart" type="button">Restart quiz</button><button id="next" class="primary" type="button">Next quiz</button></div><p id="next-help" class="status">Move to the next quiz whenever you are ready.</p></section>
+<footer>Version 1.0.3 · 14 verbs · 84 questions · Works offline · Your answers stay in this tab.</footer>
 </main>
 <script>
 const verbs=[
@@ -89,8 +89,8 @@ function render(){
 function updateScore(){
  const answered=answers.filter(value=>value!==null).length,score=answers.filter(value=>value===true).length;
  results.innerHTML='<p class="result">'+(answered===items.length?'Final score: ':'Score: ')+score+' / '+(answered===0?'0':answered)+(answered===items.length?' · '+Math.round(score/items.length*100)+'%':'')+'</p>';
- next.disabled=score!==items.length||current===verbs.length-1;
- document.querySelector('#next-help').textContent=answered!==items.length?'Score 100% to unlock the next quiz.':score!==items.length?'Restart quiz and score 100% to continue.':current===verbs.length-1?'You completed all 14 verbs with 100%!':'100%! Continue to '+verbs[current+1][0]+' — '+translations[current+1]+'.';
+ next.disabled=current===verbs.length-1;
+ document.querySelector('#next-help').textContent=current===verbs.length-1?'This is the last quiz. Restart to practice this verb again.':'Continue to '+verbs[current+1][0]+' — '+translations[current+1]+' whenever you are ready.';
 }
 form.addEventListener('submit',event=>event.preventDefault());
 form.addEventListener('change',event=>{
